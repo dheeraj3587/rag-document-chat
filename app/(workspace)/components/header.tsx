@@ -2,29 +2,21 @@
 import { Upload, FileText, Crown, User, Menu, X, LayoutDashboard, Sparkles } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 import { useState } from "react";
+import { Button } from '@/components/ui/button';
+import { FileUpload } from './file-upload';
 
 export const Header = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-    const [pdfs, setPdfs] = useState([
+  const [pdfs, setPdfs] = useState([
     { id: 1, name: 'Marketing Report Q4.pdf', uploadDate: '2024-12-20', pages: 24 },
     { id: 2, name: 'Financial Analysis.pdf', uploadDate: '2024-12-18', pages: 18 }
   ]);
-  
+
 
   const progressValue = (pdfs.length / 5) * 100;
-    const handleFileUpload = (e: any) => {
-    const files = Array.from(e.target.files);
-    const newPdfs = files.map((file, index) => ({
-      id: pdfs.length + index + 1,
-      name: file.name,
-      uploadDate: new Date().toISOString().split('T')[0],
-      pages: Math.floor(Math.random() * 30) + 5
-    }));
-    setPdfs([...pdfs, ...newPdfs]);
-  };
   return (
     <>
-     <button
+      <button
         onClick={() => setSidebarOpen(!sidebarOpen)}
         className="lg:hidden fixed top-4 left-4 z-50 p-2 rounded-lg bg-white shadow-lg"
       >
@@ -38,7 +30,7 @@ export const Header = () => {
           onClick={() => setSidebarOpen(false)}
         />
       )}
-          <aside
+      <aside
         className={`
           fixed lg:static inset-y-0 left-0 z-40
           w-72 bg-white border-r border-slate-200
@@ -64,17 +56,12 @@ export const Header = () => {
             <span>Dashboard</span>
           </button>
 
-          <label className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 w-full hover:bg-slate-100 transition-colors cursor-pointer font-medium text-sm">
-            <Upload size={18} />
-            <span>Upload PDF</span>
-            <input 
-              type="file" 
-              accept=".pdf" 
-              multiple 
-              className="hidden" 
-              onChange={handleFileUpload}
-            />
-          </label>
+          <FileUpload>
+            <Button className="flex items-center gap-3 px-3 py-2.5 rounded-lg w-full bg-slate-900 text-white hover:bg-slate-800 transition-colors cursor-pointer font-medium text-sm">
+              <Upload size={18} />
+              <span>Upload PDF</span>
+            </Button>
+          </FileUpload>
 
           <button className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 w-full hover:bg-slate-100 transition-colors font-medium text-sm group">
             <Crown size={18} className="text-amber-500" />
@@ -102,6 +89,6 @@ export const Header = () => {
           </button>
         </div>
       </aside>
-      </>
+    </>
   )
 }
