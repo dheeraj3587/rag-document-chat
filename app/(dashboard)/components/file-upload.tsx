@@ -31,6 +31,7 @@ export function FileUpload({ children }: { children: React.ReactNode }) {
     const [file, setFile] = useState<File | null>(null);
     const [name, setName] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
+    const [open, setOpen] = useState(false);
     const onFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
         console.log(e.target.files![0])
         setFile(e.target.files![0])
@@ -67,9 +68,10 @@ export function FileUpload({ children }: { children: React.ReactNode }) {
         })
         // console.log(embedResponse)
         setLoading(false);
+        setOpen(false);
     }
     return (
-        <Dialog>
+        <Dialog open={open} onOpenChange={setOpen}>
             <form>
                 <DialogTrigger asChild>
                     {children}

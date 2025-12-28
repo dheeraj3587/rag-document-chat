@@ -3,25 +3,19 @@ import { FileText, Upload } from 'lucide-react';
 
 import React, { useState } from 'react';
 import { Header } from '../components/header';
+import { UserButton, useUser } from '@clerk/clerk-react';
+
 export default function Dashboard() {
-    const [pdfs, setPdfs] = useState([
-    { id: 1, name: 'Marketing Report Q4.pdf', uploadDate: '2024-12-20', pages: 24 },
-    { id: 2, name: 'Financial Analysis.pdf', uploadDate: '2024-12-18', pages: 18 }
+  const [pdfs, setPdfs] = useState([
+    // { id: 1, name: 'Marketing Report Q4.pdf', uploadDate: '2024-12-20', pages: 24 },
+    // { id: 2, name: 'Financial Analysis.pdf', uploadDate: '2024-12-18', pages: 18 }
   ]);
-const handleFileUpload = (e) => {
-    const files = Array.from(e.target.files);
-    const newPdfs = files.map((file, index) => ({
-      id: pdfs.length + index + 1,
-      name: file.name,
-      uploadDate: new Date().toISOString().split('T')[0],
-      pages: Math.floor(Math.random() * 30) + 5
-    }));
-    setPdfs([...pdfs, ...newPdfs]);
-  };
+
+  const { user } = useUser();
   return (
     <div className="flex h-screen bg-slate-50">
       {/* Mobile Menu Button */}
-      <Header/>
+      <Header />
       {/* Left Sidebar */}
 
       {/* Main Content */}
@@ -37,16 +31,19 @@ const handleFileUpload = (e) => {
               <h1 className="text-lg font-semibold text-slate-900 ml-12">Dashboard</h1>
             </div>
           </div>
-          
+
           {/* Profile */}
           <div className="flex items-center gap-3">
             <div className="hidden sm:block text-right">
-              <p className="text-sm font-medium text-slate-900">John Doe</p>
+              <p className="text-sm font-medium text-slate-900">{user?.firstName}</p>
               <p className="text-xs text-slate-500">Free Plan</p>
             </div>
-            <button className="w-10 h-10 rounded-full bg-slate-900 flex items-center justify-center text-white font-medium hover:ring-2 hover:ring-slate-300 transition-all">
-              JD
-            </button>
+            <UserButton appearance={{
+              elements: {
+                userButtonAvatar: "w-12 h-12",  // Tailwind classes
+                userButtonTrigger: "p-2",
+              },
+            }} />
           </div>
         </header>
 
@@ -64,12 +61,12 @@ const handleFileUpload = (e) => {
               <label className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-slate-900 text-white hover:bg-slate-800 transition-colors cursor-pointer text-sm font-medium">
                 <Upload size={16} />
                 Upload PDF
-                <input 
-                  type="file" 
-                  accept=".pdf" 
-                  multiple 
-                  className="hidden" 
-                  onChange={handleFileUpload}
+                <input
+                  type="file"
+                  accept=".pdf"
+                  multiple
+                  className="hidden"
+                // onChange={handleFileUpload}
                 />
               </label>
             </div>
@@ -79,7 +76,7 @@ const handleFileUpload = (e) => {
                 <h2 className="text-base font-semibold text-slate-900">Recent Documents</h2>
                 <p className="text-sm text-slate-500">You have {pdfs.length} document{pdfs.length !== 1 ? 's' : ''}</p>
               </div>
-              
+
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                 {pdfs.map((pdf) => (
                   <button
@@ -90,7 +87,7 @@ const handleFileUpload = (e) => {
                     <div className="h-40 bg-slate-50 flex items-center justify-center border-b border-slate-200 group-hover:bg-slate-100 transition-colors">
                       <FileText size={48} className="text-slate-300" />
                     </div>
-                    
+
                     {/* PDF Info */}
                     <div className="p-4">
                       <h3 className="font-medium text-slate-900 mb-2 truncate text-sm">
