@@ -3,7 +3,7 @@ import { Editor } from '@tiptap/react'
 import {
     Bold,
     Italic,
-    Underline as UnderlineIcon,
+    Underline,
     AlignLeft,
     AlignCenter,
     AlignRight,
@@ -15,6 +15,7 @@ import {
     Highlighter,
     Sparkle,
 } from 'lucide-react'
+import { getGeminiResponse } from '@/configs/AIModel'
 
 // Explicitly import extensions to ensure Typescript picks up the command augmentations
 import '@tiptap/extension-highlight'
@@ -74,164 +75,175 @@ export const EditorExtension = ({ editor }: EditorExtensionProps) => {
         })
 
         console.log('unformatted answer', result)
+
+        const PROMPT = `For this question ${selectedText}, the answer is ${result}. Please give the answer in HTML format.`
+
+        const formattedAnswer = await getGeminiResponse(PROMPT)
+
+        const finalAnswer = formattedAnswer.replace('```html', '').replace('```', '')
+
+        console.log('formatted answer', formattedAnswer)
+
+        const AllText = editor.getHTML();
+
+        editor.commands.setContent(AllText + '<p><strong>Answer: </strong>' + finalAnswer + '</p>');
     }
 
     return (
-        <div className='border-b border-gray-200 bg-white px-4 py-2 flex items-center gap-4 flex-wrap sticky top-0 z-50 rounded-t-xl shadow-sm'>
+        <div className='bg-gradient-to-b from-white to-gray-50/50 border-b border-gray-200/80 px-6 py-3 rounded-t-xl shadow-sm backdrop-blur-sm'>
+            <div className="flex items-center gap-2 flex-wrap">
 
-            {/* Group: Headings */}
-            <div className="flex items-center gap-1 p-1 bg-gray-50 rounded-lg border border-gray-100">
+                {/* Unified Toolbar Group */}
+                <div className="flex items-center gap-0.5 px-2 py-1.5 bg-white rounded-lg border border-gray-200/60 shadow-sm">
+
+                    {/* Headings */}
+                    <button
+                        onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
+                        className={`p-2 rounded-md transition-all duration-150 ${editor.isActive('heading', { level: 1 })
+                                ? 'bg-blue-50 text-blue-600 shadow-sm'
+                                : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                            }`}
+                        title="Heading 1"
+                    >
+                        <Heading1 className="w-4 h-4" />
+                    </button>
+                    <button
+                        onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
+                        className={`p-2 rounded-md transition-all duration-150 ${editor.isActive('heading', { level: 2 })
+                                ? 'bg-blue-50 text-blue-600 shadow-sm'
+                                : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                            }`}
+                        title="Heading 2"
+                    >
+                        <Heading2 className="w-4 h-4" />
+                    </button>
+                    <button
+                        onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
+                        className={`p-2 rounded-md transition-all duration-150 ${editor.isActive('heading', { level: 3 })
+                                ? 'bg-blue-50 text-blue-600 shadow-sm'
+                                : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                            }`}
+                        title="Heading 3"
+                    >
+                        <Heading3 className="w-4 h-4" />
+                    </button>
+
+                    {/* Divider */}
+                    <div className="w-px h-6 bg-gray-200 mx-1" />
+
+                    {/* Formatting */}
+                    <button
+                        onClick={() => editor.chain().focus().toggleBold().run()}
+                        className={`p-2 rounded-md transition-all duration-150 ${editor.isActive('bold')
+                                ? 'bg-blue-50 text-blue-600 shadow-sm'
+                                : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                            }`}
+                        title="Bold"
+                    >
+                        <Bold className="w-4 h-4" />
+                    </button>
+                    <button
+                        onClick={() => editor.chain().focus().toggleItalic().run()}
+                        className={`p-2 rounded-md transition-all duration-150 ${editor.isActive('italic')
+                                ? 'bg-blue-50 text-blue-600 shadow-sm'
+                                : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                            }`}
+                        title="Italic"
+                    >
+                        <Italic className="w-4 h-4" />
+                    </button>
+                    <button
+                        onClick={() => editor.chain().focus().toggleUnderline().run()}
+                        className={`p-2 rounded-md transition-all duration-150 ${editor.isActive('underline')
+                                ? 'bg-blue-50 text-blue-600 shadow-sm'
+                                : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                            }`}
+                        title="Underline"
+                    >
+                        <Underline className="w-4 h-4" />
+                    </button>
+                    <button
+                        onClick={() => editor.chain().focus().toggleHighlight().run()}
+                        className={`p-2 rounded-md transition-all duration-150 ${editor.isActive('highlight')
+                                ? 'bg-amber-50 text-amber-600 shadow-sm'
+                                : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                            }`}
+                        title="Highlight"
+                    >
+                        <Highlighter className="w-4 h-4" />
+                    </button>
+
+                    {/* Divider */}
+                    <div className="w-px h-6 bg-gray-200 mx-1" />
+
+                    {/* Alignment */}
+                    <button
+                        onClick={() => editor.chain().focus().setTextAlign('left').run()}
+                        className={`p-2 rounded-md transition-all duration-150 ${editor.isActive({ textAlign: 'left' })
+                                ? 'bg-blue-50 text-blue-600 shadow-sm'
+                                : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                            }`}
+                        title="Align Left"
+                    >
+                        <AlignLeft className="w-4 h-4" />
+                    </button>
+                    <button
+                        onClick={() => editor.chain().focus().setTextAlign('center').run()}
+                        className={`p-2 rounded-md transition-all duration-150 ${editor.isActive({ textAlign: 'center' })
+                                ? 'bg-blue-50 text-blue-600 shadow-sm'
+                                : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                            }`}
+                        title="Align Center"
+                    >
+                        <AlignCenter className="w-4 h-4" />
+                    </button>
+                    <button
+                        onClick={() => editor.chain().focus().setTextAlign('right').run()}
+                        className={`p-2 rounded-md transition-all duration-150 ${editor.isActive({ textAlign: 'right' })
+                                ? 'bg-blue-50 text-blue-600 shadow-sm'
+                                : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                            }`}
+                        title="Align Right"
+                    >
+                        <AlignRight className="w-4 h-4" />
+                    </button>
+
+                    {/* Divider */}
+                    <div className="w-px h-6 bg-gray-200 mx-1" />
+
+                    {/* Lists */}
+                    <button
+                        onClick={() => editor.chain().focus().toggleBulletList().run()}
+                        className={`p-2 rounded-md transition-all duration-150 ${editor.isActive('bulletList')
+                                ? 'bg-blue-50 text-blue-600 shadow-sm'
+                                : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                            }`}
+                        title="Bullet List"
+                    >
+                        <List className="w-4 h-4" />
+                    </button>
+                    <button
+                        onClick={() => editor.chain().focus().toggleOrderedList().run()}
+                        className={`p-2 rounded-md transition-all duration-150 ${editor.isActive('orderedList')
+                                ? 'bg-blue-50 text-blue-600 shadow-sm'
+                                : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                            }`}
+                        title="Ordered List"
+                    >
+                        <ListOrdered className="w-4 h-4" />
+                    </button>
+                </div>
+
+                {/* AI Button - Separate but cohesive */}
                 <button
-                    onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
-                    style={editor.isActive('heading', { level: 1 }) ? { backgroundColor: '#ffffff', color: '#000000', border: '1px solid #e5e7eb', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' } : {}}
-                    className={`p-1.5 rounded transition-all duration-200 ${editor.isActive('heading', { level: 1 })
-                        ? 'border border-gray-200'
-                        : 'text-gray-500 hover:text-gray-700 hover:bg-white hover:shadow-sm'
-                        }`}
-                    title="Heading 1"
+                    onClick={() => onAiClick()}
+                    className="flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-amber-400 to-orange-400 hover:from-amber-500 hover:to-orange-500 text-white rounded-lg shadow-sm hover:shadow-md transition-all duration-150 font-medium text-sm"
+                    title="AI Assistant"
                 >
-                    <Heading1 className="w-4 h-4" style={{ color: editor.isActive('heading', { level: 1 }) ? '#000000' : undefined }} />
-                </button>
-                <button
-                    onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
-                    style={editor.isActive('heading', { level: 2 }) ? { backgroundColor: '#ffffff', color: '#000000', border: '1px solid #e5e7eb', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' } : {}}
-                    className={`p-1.5 rounded transition-all duration-200 ${editor.isActive('heading', { level: 2 })
-                        ? 'border border-gray-200'
-                        : 'text-gray-500 hover:text-gray-700 hover:bg-white hover:shadow-sm'
-                        }`}
-                    title="Heading 2"
-                >
-                    <Heading2 className="w-4 h-4" style={{ color: editor.isActive('heading', { level: 2 }) ? '#000000' : undefined }} />
-                </button>
-                <button
-                    onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
-                    style={editor.isActive('heading', { level: 3 }) ? { backgroundColor: '#ffffff', color: '#000000', border: '1px solid #e5e7eb', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' } : {}}
-                    className={`p-1.5 rounded transition-all duration-200 ${editor.isActive('heading', { level: 3 })
-                        ? 'border border-gray-200'
-                        : 'text-gray-500 hover:text-gray-700 hover:bg-white hover:shadow-sm'
-                        }`}
-                    title="Heading 3"
-                >
-                    <Heading3 className="w-4 h-4" style={{ color: editor.isActive('heading', { level: 3 }) ? '#000000' : undefined }} />
+                    <Sparkle className="w-4 h-4" />
+                    <span>AI</span>
                 </button>
             </div>
-
-            {/* Group: Formatting */}
-            <div className="flex items-center gap-1 p-1 bg-gray-50 rounded-lg border border-gray-100">
-                <button
-                    onClick={() => editor.chain().focus().toggleBold().run()}
-                    style={editor.isActive('bold') ? { backgroundColor: '#ffffff', color: '#000000', border: '1px solid #e5e7eb', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' } : {}}
-                    className={`p-1.5 rounded transition-all duration-200 ${editor.isActive('bold')
-                        ? 'border border-gray-200'
-                        : 'text-gray-500 hover:text-gray-700 hover:bg-white hover:shadow-sm'
-                        }`}
-                    title="Bold"
-                >
-                    <Bold className="w-4 h-4" style={{ color: editor.isActive('bold') ? '#000000' : undefined }} />
-                </button>
-                <button
-                    onClick={() => editor.chain().focus().toggleItalic().run()}
-                    style={editor.isActive('italic') ? { backgroundColor: '#ffffff', color: '#000000', border: '1px solid #e5e7eb', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' } : {}}
-                    className={`p-1.5 rounded transition-all duration-200 ${editor.isActive('italic')
-                        ? 'border border-gray-200'
-                        : 'text-gray-500 hover:text-gray-700 hover:bg-white hover:shadow-sm'
-                        }`}
-                    title="Italic"
-                >
-                    <Italic className="w-4 h-4" style={{ color: editor.isActive('italic') ? '#000000' : undefined }} />
-                </button>
-                <button
-                    onClick={() => editor.chain().focus().toggleUnderline().run()}
-                    style={editor.isActive('underline') ? { backgroundColor: '#ffffff', color: '#000000', border: '1px solid #e5e7eb', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' } : {}}
-                    className={`p-1.5 rounded transition-all duration-200 ${editor.isActive('underline')
-                        ? 'border border-gray-200'
-                        : 'text-gray-500 hover:text-gray-700 hover:bg-white hover:shadow-sm'
-                        }`}
-                    title="Underline"
-                >
-                    <UnderlineIcon className="w-4 h-4" style={{ color: editor.isActive('underline') ? '#000000' : undefined }} />
-                </button>
-                <button
-                    onClick={() => editor.chain().focus().toggleHighlight().run()}
-                    style={editor.isActive('highlight') ? { backgroundColor: '#ffffff', color: '#d97706', border: '1px solid #e5e7eb', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' } : {}}
-                    className={`p-1.5 rounded transition-all duration-200 ${editor.isActive('highlight')
-                        ? 'border border-gray-200'
-                        : 'text-gray-500 hover:text-gray-700 hover:bg-white hover:shadow-sm'
-                        }`}
-                    title="Highlight"
-                >
-                    <Highlighter className="w-4 h-4" style={{ color: editor.isActive('highlight') ? '#d97706' : undefined }} />
-                </button>
-            </div>
-
-            {/* Group: Alignment */}
-            <div className="flex items-center gap-1 p-1 bg-gray-50 rounded-lg border border-gray-100">
-                <button
-                    onClick={() => editor.chain().focus().setTextAlign('left').run()}
-                    style={editor.isActive({ textAlign: 'left' }) ? { backgroundColor: '#ffffff', color: '#000000', border: '1px solid #e5e7eb', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' } : {}}
-                    className={`p-1.5 rounded transition-all duration-200 ${editor.isActive({ textAlign: 'left' })
-                        ? 'border border-gray-200'
-                        : 'text-gray-500 hover:text-gray-700 hover:bg-white hover:shadow-sm'
-                        }`}
-                    title="Align Left"
-                >
-                    <AlignLeft className="w-4 h-4" style={{ color: editor.isActive({ textAlign: 'left' }) ? '#000000' : undefined }} />
-                </button>
-                <button
-                    onClick={() => editor.chain().focus().setTextAlign('center').run()}
-                    style={editor.isActive({ textAlign: 'center' }) ? { backgroundColor: '#ffffff', color: '#000000', border: '1px solid #e5e7eb', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' } : {}}
-                    className={`p-1.5 rounded transition-all duration-200 ${editor.isActive({ textAlign: 'center' })
-                        ? 'border border-gray-200'
-                        : 'text-gray-500 hover:text-gray-700 hover:bg-white hover:shadow-sm'
-                        }`}
-                    title="Align Center"
-                >
-                    <AlignCenter className="w-4 h-4" style={{ color: editor.isActive({ textAlign: 'center' }) ? '#000000' : undefined }} />
-                </button>
-                <button
-                    onClick={() => editor.chain().focus().setTextAlign('right').run()}
-                    style={editor.isActive({ textAlign: 'right' }) ? { backgroundColor: '#ffffff', color: '#000000', border: '1px solid #e5e7eb', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' } : {}}
-                    className={`p-1.5 rounded transition-all duration-200 ${editor.isActive({ textAlign: 'right' })
-                        ? 'border border-gray-200'
-                        : 'text-gray-500 hover:text-gray-700 hover:bg-white hover:shadow-sm'
-                        }`}
-                    title="Align Right"
-                >
-                    <AlignRight className="w-4 h-4" style={{ color: editor.isActive({ textAlign: 'right' }) ? '#000000' : undefined }} />
-                </button>
-            </div>
-
-            {/* Group: Lists */}
-            <div className="flex items-center gap-1 p-1 bg-gray-50 rounded-lg border border-gray-100">
-                <button
-                    onClick={() => editor.chain().focus().toggleBulletList().run()}
-                    style={editor.isActive('bulletList') ? { backgroundColor: '#ffffff', color: '#000000', border: '1px solid #e5e7eb', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' } : {}}
-                    className={`p-1.5 rounded transition-all duration-200 ${editor.isActive('bulletList')
-                        ? 'border border-gray-200'
-                        : 'text-gray-500 hover:text-gray-700 hover:bg-white hover:shadow-sm'
-                        }`}
-                    title="Bullet List"
-                >
-                    <List className="w-4 h-4" style={{ color: editor.isActive('bulletList') ? '#000000' : undefined }} />
-                </button>
-                <button
-                    onClick={() => editor.chain().focus().toggleOrderedList().run()}
-                    style={editor.isActive('orderedList') ? { backgroundColor: '#ffffff', color: '#000000', border: '1px solid #e5e7eb', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' } : {}}
-                    className={`p-1.5 rounded transition-all duration-200 ${editor.isActive('orderedList')
-                        ? 'border border-gray-200'
-                        : 'text-gray-500 hover:text-gray-700 hover:bg-white hover:shadow-sm'
-                        }`}
-                    title="Ordered List"
-                >
-                    <ListOrdered className="w-4 h-4" style={{ color: editor.isActive('orderedList') ? '#000000' : undefined }} />
-                </button>
-            </div>
-
-            <button
-                onClick={() => onAiClick()}
-            >
-                <Sparkle className="text-amber-400 hover:text-amber-500 rounded transition-all duration-200" />
-            </button>
         </div>
     )
 }

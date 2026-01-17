@@ -38,18 +38,18 @@ const Workspace = () => {
   const file = getFileRecord[0]
 
   return (
-    <div className="flex flex-col h-[calc(100vh-(--spacing(16)))]">
-      <WorkspaceHeader />
+    <div className="flex flex-col h-screen">
+      <WorkspaceHeader fileName={file.fileName} />
 
-      <div className="h-full overflow-hidden p-4">
-        <PanelGroup orientation="horizontal">
-          <Panel defaultSize={50} minSize={20}>
+      <div className="flex-1 overflow-hidden p-4">
+        <PanelGroup orientation="horizontal" className="h-full">
+          <Panel defaultSize={50} minSize={20} className="h-full">
             <TextEditor />
           </Panel>
 
           <PanelResizeHandle className="w-2 cursor-col-resize" />
 
-          <Panel defaultSize={50} minSize={20}>
+          <Panel defaultSize={50} minSize={20} className="h-full">
             <PdfViewer fileUrl={file.fileUrl} />
           </Panel>
         </PanelGroup>

@@ -48,7 +48,9 @@ export const TextEditor = () => {
     return (
         <div className='border border-slate-200 rounded-xl bg-white shadow-sm overflow-hidden flex flex-col h-full'>
             {/* Toolbar */}
-            <EditorExtension editor={editor} />
+            <div className="shrink-0 z-10 sticky top-0 bg-white">
+                <EditorExtension editor={editor} />
+            </div>
 
             {/* Editor Area */}
             <div className="flex-1 overflow-y-auto custom-scrollbar bg-white">
