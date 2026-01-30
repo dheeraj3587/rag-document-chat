@@ -1,7 +1,12 @@
 'use client'
 import ShinyText from "@/components/ShinyText"
+import { useRouter } from "next/navigation";
 
 const Pricing = () => {
+  const router = useRouter();
+  const handleUpgrade = () => {
+    router.push("/payment-section");
+  }
   return (
     <section id="pricing" className="container mx-auto px-4 sm:px-6 py-12 sm:py-20 max-w-5xl">
         <div className="text-center mb-8 sm:mb-12">
@@ -75,7 +80,7 @@ const Pricing = () => {
             </div>
 
             {/* CTA Button */}
-            <button className="w-full py-2.5 mb-6 sm:mb-8 bg-slate-900 text-white hover:bg-black font-medium rounded-lg transition-all text-xs sm:text-sm">
+            <button onClick={handleUpgrade}  className="w-full py-2.5 mb-6 sm:mb-8 bg-slate-900 text-white hover:bg-black font-medium rounded-lg transition-all text-xs sm:text-sm">
               Upgrade now
             </button>
 
