@@ -73,9 +73,8 @@ const Pricing = () => {
               <h3 className="text-lg sm:text-xl font-semibold mb-2 text-black">Pro</h3>
               <div className="flex items-end gap-1">
                 <span className="text-3xl sm:text-4xl font-bold text-black">
-                  <ShinyText text="5$" disabled={false} speed={3} className='custom-class' />
+                  <ShinyText text="20$" disabled={false} speed={3} className='custom-class' />
                 </span>
-                <span className="text-xs sm:text-sm text-neutral-500 mb-1">/ year</span>
               </div>
             </div>
 

@@ -2,36 +2,23 @@ import { motion } from "framer-motion";
 
 export default function LoadingPage() {
   return (
-    <div className="h-screen w-full flex items-center justify-center bg-linear-to-br from-slate-900 via-slate-800 to-slate-900 overflow-hidden">
-      {/* Background glow */}
-      <div className="absolute w-72 h-72 bg-blue-500/20 rounded-full blur-3xl animate-pulse" />
-
-      {/* Loader container */}
-      <div className="relative flex flex-col items-center gap-8">
-        {/* Animated Ring */}
+    <div className="h-screen w-full flex items-center justify-center bg-black">
+      <div className="flex flex-col items-center gap-10">
+        {/* Elegant Spinner */}
         <motion.div
-          className="w-24 h-24 rounded-full border-4 border-blue-400 border-t-transparent"
+          className="w-14 h-14 rounded-full border-2 border-[#D4AF37]/30 border-t-[#D4AF37]"
           animate={{ rotate: 360 }}
-          transition={{ repeat: Infinity, duration: 1.2, ease: "linear" }}
+          transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
         />
 
-        {/* Bouncing Dots */}
-        <div className="flex gap-3">
-          {[0, 1, 2].map((i) => (
-            <motion.div
-              key={i}
-              className="w-4 h-4 bg-blue-400 rounded-full"
-              animate={{ y: [0, -10, 0] }}
-              transition={{ repeat: Infinity, duration: 0.8, delay: i * 0.15 }}
-            />
-          ))}
-        </div>
+        {/* Subtle Brand Line */}
+        <div className="w-24 h-px bg-[#D4AF37]/40" />
 
-        {/* Text */}
+        {/* Minimal Text */}
         <motion.p
-          className="text-blue-200 text-lg tracking-widest"
-          animate={{ opacity: [0.4, 1, 0.4] }}
-          transition={{ repeat: Infinity, duration: 1.5 }}
+          className="text-[#D4AF37] text-sm tracking-[0.35em] font-light"
+          animate={{ opacity: [0.5, 1, 0.5] }}
+          transition={{ repeat: Infinity, duration: 1.8 }}
         >
           LOADING
         </motion.p>
