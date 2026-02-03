@@ -6,8 +6,12 @@ export default defineSchema({
     userName: v.string(),
     email: v.string(),
     imageUrl: v.string(),
-    upgrade: v.boolean()
-  }),
+    upgrade: v.boolean(),
+    stripeCustomerId: v.optional(v.string()), 
+    subscriptionId: v.optional(v.string()), 
+  }).index("by_email", ["email"])              
+    .index("by_stripe_customer", ["stripeCustomerId"]),
+    
   pdfFiles: defineTable({
     fileId: v.string(),
     storageId: v.string(),

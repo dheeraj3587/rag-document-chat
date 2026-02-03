@@ -1,4 +1,4 @@
-import { mutation } from "./_generated/server";
+import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 
 export const createUser = mutation({
@@ -29,16 +29,68 @@ export const createUser = mutation({
 });
 
 export const upgradeUser = mutation({
-  args:{
-    userEmail: v.string()
+  args: {
+    email: v.string(),
+    upgrade: v.boolean(),
   },
-  handler: async (ctx, args)=>{
-    const result = await ctx.db.query('users').filter(q=>q.eq(q.field('email'), args.userEmail)).collect();
+  handler: async (ctx, args) => {
+    const user = await ctx.db
+      .query("users")
+      .filter((q)=>q.eq(q.field("email"),args.email))
+      .first();
 
-    if(result){
-      ctx.db.patch(result[0]._id,{upgrade:true});
-      return "success"
+    if (!user) {
+      throw new Error("User not found");
     }
-    return "payment failed"
-  }
-})
+
+    await ctx.db.patch(user._id, {
+      upgrade: args.upgrade,
+    });
+
+    return { success: true, userId: user._id };
+  },
+});
+
+export const updateStripeInfo = mutation({
+  args: {
+    email: v.string(),
+    stripeCustomerId: v.string(),
+    subscriptionId: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const user = await ctx.db
+      .query("users")
+      .filter((q)=>q.eq(q.field("email"),args.email))
+      .first();
+
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    await ctx.db.patch(user._id, {
+      stripeCustomerId: args.stripeCustomerId,
+      subscriptionId: args.subscriptionId,
+    });
+
+    return { success: true };
+  },
+});
+
+export const getUser = query({
+  args: {
+    email: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    if (!args?.email) {
+      return;
+    }
+    const user = await ctx.db
+      .query("users").filter((q)=>q.eq(q.field("email"),args?.email)).first();
+
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    return user;
+  },
+});

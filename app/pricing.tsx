@@ -1,11 +1,23 @@
 'use client'
 import ShinyText from "@/components/ShinyText"
 import { useRouter } from "next/navigation";
+// import { useQuery } from "convex/react";
+// import { api } from "@/convex/_generated/api";
+import { useUser } from "@clerk/clerk-react";
+// import { toast } from "sonner";
 
 const Pricing = () => {
   const router = useRouter();
+  const {user} = useUser();
   const handleUpgrade = () => {
-    router.push("/payment-section");
+    process.env.NODE_ENV === 'development' ? router.push("https://buy.stripe.com/test_bJefZibOAacfghw7iRgnK00") : router.push("/")
+    // const currentUser = useQuery(api.user.getUser,{
+    //   email: user?.primaryEmailAddress?.emailAddress as string
+    // });
+
+    // if(currentUser?.upgrade){
+    //   toast.success("🎉 You are now Pro!");
+    // }
   }
   return (
     <section id="pricing" className="container mx-auto px-4 sm:px-6 py-12 sm:py-20 max-w-5xl">
@@ -29,7 +41,7 @@ const Pricing = () => {
               </div>
             </div>
 
-            <button className="w-full py-2.5 mb-6 bg-slate-100 hover:bg-slate-200 text-slate-900 font-medium rounded-lg transition-colors text-xs sm:text-sm">
+            <button onClick={()=>router.push('/dashboard')} className="w-full py-2.5 mb-6 bg-slate-100 hover:bg-slate-200 text-slate-900 font-medium rounded-lg transition-colors text-xs sm:text-sm">
               Get started
             </button>
 

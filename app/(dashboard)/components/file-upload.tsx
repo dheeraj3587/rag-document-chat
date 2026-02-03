@@ -34,7 +34,7 @@ export function FileUpload({ children }: { children: React.ReactNode }) {
     const [open, setOpen] = useState(false);
 
     const onFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        console.log(e.target.files![0])
+        // console.log(e.target.files![0])
         setFile(e.target.files![0])
     }
 
@@ -49,7 +49,7 @@ export function FileUpload({ children }: { children: React.ReactNode }) {
         });
         const { storageId } = await result.json();
         const fileId = uuidv4();
-        console.log(storageId)
+        // console.log(storageId)
         const fileUrl = await getFileUrl({ storageId });
         const response = await InsertFileEntry({
             fileId: fileId,
@@ -59,10 +59,10 @@ export function FileUpload({ children }: { children: React.ReactNode }) {
             fileUrl: fileUrl as string
         })
 
-        console.log(response)
+        // console.log(response)
 
         const apiResponse = await axios.get('api/pdf-loader?pdfUrl=' + fileUrl);
-        console.log(apiResponse.data.result)
+        // console.log(apiResponse.data.result)
         const embedResponse = await embedDocuments({
             splitText: apiResponse.data.result,
             fileId: fileId

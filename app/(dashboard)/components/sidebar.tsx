@@ -9,7 +9,6 @@ import { useUser } from '@clerk/clerk-react';
 import { useQuery } from 'convex/react';
 import { api } from '@/convex/_generated/api';
 
-
 export const Sidebar = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const path = usePathname();
@@ -21,7 +20,9 @@ export const Sidebar = () => {
     userEmail: user?.primaryEmailAddress?.emailAddress as string
   })
 
-
+  const currentUser = useQuery(api.user.getUser,{
+    email: user?.primaryEmailAddress?.emailAddress as string
+  });
 
   const progressValue = getAllFiles&&getAllFiles.length ? (getAllFiles.length / 5) * 100 : 0;
   return (
@@ -64,7 +65,7 @@ export const Sidebar = () => {
           </button>
 
           <FileUpload>
-            <Button disabled={getAllFiles?.length === 5} className="flex items-center gap-3 px-3 py-2.5 rounded-lg w-full bg-slate-900 text-white hover:bg-slate-800 transition-colors cursor-pointer font-medium text-sm">
+            <Button disabled={getAllFiles?.length === 5&&currentUser?.upgrade === false} className="flex items-center gap-3 px-3 py-2.5 rounded-lg w-full bg-slate-900 text-white hover:bg-slate-800 transition-colors cursor-pointer font-medium text-sm">
               <Upload size={18} />
               <span>Upload PDF</span>
             </Button>
@@ -77,7 +78,11 @@ export const Sidebar = () => {
           </button>
         </nav>
 
+
+
         {/* Progress Section */}
+
+        { currentUser?.upgrade === false && (
         <div className="p-6 border-t border-slate-200 space-y-4">
           <div className="p-4 rounded-lg bg-slate-50 border border-slate-200">
             <div className="flex items-center justify-between mb-3">
@@ -95,6 +100,7 @@ export const Sidebar = () => {
             Upgrade Plan
           </button>
         </div>
+        )}
       </aside>
     </>
   )
