@@ -124,7 +124,10 @@ export default function Home() {
           >
             Get started free →
           </button>
-          <button className="px-6 py-3 bg-white text-slate-700 font-medium rounded-lg hover:bg-slate-50 border border-slate-200 transition-all text-sm w-full sm:w-auto cursor-pointer">
+          <button
+            onClick={() => router.push("/video")}
+            className="px-6 py-3 bg-white text-slate-700 font-medium rounded-lg hover:bg-slate-50 border border-slate-200 transition-all text-sm w-full sm:w-auto cursor-pointer"
+          >
             See how it works
           </button>
         </div>
