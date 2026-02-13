@@ -1,16 +1,16 @@
 <div align="center">
 
-# 📝 Kagaz
+# 📄 RAG Document Chat
 
-### Your intelligent notebook for any document
+### Chat with your PDFs, audio, and video files
 
-*Write, organize, and ask questions. Kagaz turns your notes into answers.*
+*Upload files, ask questions, and get grounded answers with citations and timestamps.*
 
-[![Star on GitHub](https://img.shields.io/github/stars/Angshuman09/kagaz?style=social)](https://github.com/Angshuman09/kagaz)
-[![Next.js](https://img.shields.io/badge/Next.js-15-black)](https://nextjs.org/)
-[![Convex](https://img.shields.io/badge/Convex-Database-orange)](https://convex.dev/)
+[![Star on GitHub](https://img.shields.io/github/stars/dheeraj3587/rag-document-chat?style=social)](https://github.com/dheeraj3587/rag-document-chat)
+[![Next.js](https://img.shields.io/badge/Next.js-16-black)](https://nextjs.org/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.115-05998b)](https://fastapi.tiangolo.com/)
 
-[Live Demo](https://kagaz-notes.vercel.app) • [Report Bug](https://github.com/Angshuman09/kagaz/issues) • [Request Feature](https://github.com/Angshuman09/kagaz/issues)
+[Report Bug](https://github.com/dheeraj3587/rag-document-chat/issues) • [Request Feature](https://github.com/dheeraj3587/rag-document-chat/issues)
 
 </div>
 
@@ -18,17 +18,17 @@
 
 ## 📸 Preview
 
-![Kagaz](public/home-page.png)
+![RAG Document Chat](public/home-page.png)
 
 ---
 
 ## Tech Stack
 
 - **Frontend:** Next.js 16, React 19, TypeScript, Tailwind CSS
-- **Backend:** Convex (database + server functions)
-- **Authentication:** Clerk
-- **AI/RAG:** LangChain, Google Generative AI (Gemini), PDF Parse
-- **Payments:** Stripe
+- **Backend:** FastAPI (async), PostgreSQL, Celery
+- **Authentication:** Clerk JWT
+- **AI/RAG:** LangChain, Google Generative AI (Gemini), FAISS
+- **Storage:** MinIO (S3-compatible)
 - **UI Components:** shadcn UI, Tiptap (rich text editor)
 - **Styling:** Tailwind CSS with custom animations
 
@@ -52,7 +52,7 @@
 
 ### Other Limitations
 
-- **File Format Support**: Currently limited to PDF and text files only
+- **File Format Support**: PDFs, audio (MP3/WAV), and video (MP4/WebM)
 - **Context Window**: Answers are based on limited context chunks, which may not capture the full document scope
 - **Processing Time**: Large documents require significant time for chunking and embedding generation
 
@@ -62,19 +62,18 @@
 ##  Usage
 
 1. **Sign In**: Create an account or sign in using Clerk authentication
-2. **Upload Document**: Click the upload button and select your PDF or text file
-3. **Wait for Processing**: The system will extract text, chunk it, and generate embeddings
+2. **Upload Document**: Upload a PDF, audio, or video file
+3. **Wait for Processing**: The system extracts text/transcripts, chunks, and embeds content
 4. **Ask Questions**: Type your question in the chat interface
-5. **Get Answers**: Receive AI-generated answers based on your document content
+5. **Get Answers**: Receive grounded answers with sources and timestamps
 
 ---
 
 ### Prerequisites
 
-- Node.js 18+ and npm
-- A Convex account ([sign up here](https://convex.dev/))
+- Docker and Docker Compose
+- Node.js 18+ and npm (for local frontend dev)
 - A Clerk account ([sign up here](https://clerk.com/))
-- A Stripe account ([sign up here](https://stripe.com/))
 
 ---
 
@@ -89,11 +88,11 @@ kagaz/
 ├── components/            # React components
 │   ├── ui/               # shadcn/ui components
 │   └── ...               # Custom components
-├── convex/               # Convex backend
-│   ├── notes.ts          # Notes functions
-│   ├── fileStorage.ts    # File management
-│   ├── user.ts           # User functions
-│   └── schema.ts         # Database schema
+├── backend/              # FastAPI backend
+│   ├── routers/          # API routes
+│   ├── services/         # RAG pipeline + processing
+│   ├── models/           # SQLAlchemy models
+│   └── tasks/            # Celery background tasks
 ├── lib/                  # Utility functions
 ├── public/               # Static assets
 └── configs/              # Configuration files
@@ -105,8 +104,8 @@ kagaz/
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/Angshuman09/kagaz.git
-   cd kagaz
+   git clone https://github.com/dheeraj3587/rag-document-chat.git
+   cd rag-document-chat
    ```
 
 2. **Install dependencies**
@@ -116,39 +115,29 @@ kagaz/
 
 3. **Configure environment variables**
    
-   Create a `.env.local` file in the root directory:
+   Create `backend/.env`:
    ```env
-    NODE_ENV = development
-    CONVEX_DEPLOYMENT= your_convex_deployment
-    NEXT_PUBLIC_CONVEX_URL= your_convex_url
-    NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY= your_clerk_publishable_key
-    CLERK_SECRET_KEY= your_clerk_secret_key
-    NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up
-    NEXT_PUBLIC_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL=/
-    NEXT_PUBLIC_CLERK_SIGN_IN_FALLBACK_REDIRECT_URL=/
-    NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in
-    NEXT_PUBLIC_CLERK_SIGN_IN_FALLBACK_REDIRECT_URL=/
-    NEXT_PUBLIC_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL=/
-    CLERK_JWT_ISSUER_DOMAIN= your_jwt_issuer_domain
-    GEMINI_API_KEY= your_gemini_api_key
-    NEXT_PUBLIC_STRIPE_PUBLIC_KEY = your_stripe_public_key
-    STRIPE_SECRET_KEY = your_stripe_secret_key
-    STRIPE_WEBHOOK_SECRET = your_stripe_webhook_secret
-    STRIPE_PRICE_ID= your_stripe_price_id
-    HOST_URL = your_host_url
+    DATABASE_URL=postgresql+asyncpg://kagaz:kagaz_password@db:5432/kagaz
+    REDIS_URL=redis://redis:6379/0
+    CELERY_BROKER_URL=redis://redis:6379/0
+    CELERY_RESULT_BACKEND=redis://redis:6379/1
+    MINIO_ENDPOINT=minio:9000
+    MINIO_ACCESS_KEY=minioadmin
+    MINIO_SECRET_KEY=minioadmin
+    MINIO_BUCKET=kagaz-files
+    MINIO_USE_SSL=false
+    GOOGLE_API_KEY=your-google-api-key
+    OPENAI_API_KEY=your-openai-api-key
+    CLERK_JWKS_URL=https://your-clerk-domain.clerk.accounts.dev/.well-known/jwks.json
+    CLERK_ISSUER=https://your-clerk-domain.clerk.accounts.dev
    ```
 
-4. **Set up Convex**
+4. **Run the development server**
    ```bash
-   npx convex dev
+   docker-compose up --build
    ```
 
-5. **Run the development server**
-   ```bash
-   npm run dev
-   ```
-
-6. **Open your browser**
+5. **Open your browser**
    
    Navigate to `http://localhost:3000`
 
@@ -281,10 +270,10 @@ All backend env vars listed above can also be set in the `environment` block of 
 
 ## Author
 
-**Angshuman**
+**Dheeraj Joshi**
 
-- GitHub: [@Angshuman09](https://github.com/Angshuman09)
-- Project Link: [https://github.com/Angshuman09/kagaz](https://github.com/Angshuman09/kagaz)
+- GitHub: [@dheeraj3587](https://github.com/dheeraj3587)
+- Project Link: [https://github.com/dheeraj3587/rag-document-chat](https://github.com/dheeraj3587/rag-document-chat)
 
 ---
 
@@ -292,14 +281,14 @@ All backend env vars listed above can also be set in the `environment` block of 
 
 If you find this project useful, please consider giving it a star!
 
-[![Star History Chart](https://api.star-history.com/svg?repos=Angshuman09/kagaz&type=Date)](https://star-history.com/#Angshuman09/kagaz&Date)
+[![Star History Chart](https://api.star-history.com/svg?repos=dheeraj3587/rag-document-chat&type=Date)](https://star-history.com/#dheeraj3587/rag-document-chat&Date)
 
 ---
 
 <div align="center">
 
-**[⬆ Back to Top](#-kagaz)**
+**[⬆ Back to Top](#-rag-document-chat)**
 
-Made with ❤️ by [Angshuman](https://github.com/Angshuman09)
+Made with ❤️ by [Dheeraj Joshi](https://github.com/dheeraj3587)
 
 </div>
