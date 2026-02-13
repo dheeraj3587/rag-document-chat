@@ -14,14 +14,30 @@ class StorageService:
     """Handles file uploads/downloads to MinIO."""
 
     def __init__(self):
+        protocol = "https" if settings.MINIO_USE_SSL else "http"
+
+        # Internal client — used for upload / download / delete (container network)
         self.client = boto3.client(
             "s3",
-            endpoint_url=f"{'https' if settings.MINIO_USE_SSL else 'http'}://{settings.MINIO_ENDPOINT}",
+            endpoint_url=f"{protocol}://{settings.MINIO_ENDPOINT}",
             aws_access_key_id=settings.MINIO_ACCESS_KEY,
             aws_secret_access_key=settings.MINIO_SECRET_KEY,
             config=Config(signature_version="s3v4"),
             region_name="us-east-1",
         )
+
+        # Public client — used only for presigned URLs so the signature
+        # matches the hostname the browser will actually hit.
+        public_endpoint = settings.MINIO_PUBLIC_ENDPOINT or settings.MINIO_ENDPOINT
+        self.public_client = boto3.client(
+            "s3",
+            endpoint_url=f"{protocol}://{public_endpoint}",
+            aws_access_key_id=settings.MINIO_ACCESS_KEY,
+            aws_secret_access_key=settings.MINIO_SECRET_KEY,
+            config=Config(signature_version="s3v4"),
+            region_name="us-east-1",
+        )
+
         self.bucket = settings.MINIO_BUCKET
         self._bucket_ready = False
         self._ensure_bucket()
@@ -54,13 +70,19 @@ class StorageService:
         return key
 
     def get_presigned_url(self, key: str, expires_in: int = 3600) -> str:
-        """Generate a presigned URL for downloading a file."""
+        """Generate a presigned URL for downloading a file.
+
+        Uses the public client so the signature is computed against the
+        browser-accessible hostname (e.g. localhost:9000) rather than the
+        internal Docker hostname (e.g. minio:9000).
+        """
         self._ensure_bucket()
-        return self.client.generate_presigned_url(
+        url = self.public_client.generate_presigned_url(
             "get_object",
             Params={"Bucket": self.bucket, "Key": key},
             ExpiresIn=expires_in,
         )
+        return url
 
     def download_file(self, key: str) -> bytes:
         """Download a file from MinIO and return its bytes."""

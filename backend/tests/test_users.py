@@ -53,27 +53,12 @@ class TestUsers:
         assert response.status_code == 200
         data = response.json()
         assert data["email"] == "test@example.com"
-        assert data["upgrade"] is False
-
-    async def test_update_user_upgrade(self, client):
-        """Test upgrading a user."""
-        await client.post(
-            "/api/users",
-            json={"email": "upgrade@example.com", "name": "Upgrade User"},
-        )
-
-        response = await client.patch(
-            "/api/users/upgrade@example.com",
-            json={"upgrade": True},
-        )
-        assert response.status_code == 200
-        assert response.json()["status"] == "updated"
 
     async def test_update_user_not_found(self, client):
         """Test updating a non-existent user."""
         response = await client.patch(
             "/api/users/nobody@example.com",
-            json={"upgrade": True},
+            json={"name": "Nobody"},
         )
         assert response.status_code == 404
 

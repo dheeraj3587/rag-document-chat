@@ -3,12 +3,19 @@ Celery worker for background tasks — file processing, transcription, embedding
 Keeps the API fast by offloading heavy work to background.
 """
 
+import os
+import sys
+
+# CRITICAL: Fix sys.path BEFORE any other imports
+_app_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, _app_dir)
+
 from celery import Celery
 
 from core.config import settings
 
 celery_app = Celery(
-    "kagaz",
+    "docwise",
     broker=settings.CELERY_BROKER_URL,
     backend=settings.CELERY_RESULT_BACKEND,
 )
@@ -36,6 +43,10 @@ def process_pdf(self, file_id: str, storage_key: str):
 
 
 async def _process_pdf_async(file_id: str, storage_key: str):
+    import os, sys
+    _app_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    sys.path.insert(0, _app_dir)
+    
     from services.storage_service import storage_service
     from services.pdf_service import pdf_service
     from services.embedding_service import embedding_service
@@ -74,6 +85,10 @@ def process_media(self, file_id: str, storage_key: str, file_name: str):
 
 
 async def _process_media_async(file_id: str, storage_key: str, file_name: str):
+    import os, sys
+    _app_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    sys.path.insert(0, _app_dir)
+    
     from services.storage_service import storage_service
     from services.transcription_service import transcription_service
     from services.embedding_service import embedding_service

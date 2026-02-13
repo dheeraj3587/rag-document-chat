@@ -3,7 +3,7 @@
 from typing import List, Dict, Any
 import json
 
-from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_openai import AzureChatOpenAI
 from core.config import settings
 
 
@@ -11,9 +11,11 @@ class TimestampService:
     """Extracts topic-level timestamps from transcription segments."""
 
     def __init__(self):
-        self.llm = ChatGoogleGenerativeAI(
-            model="gemini-2.0-flash",
-            google_api_key=settings.GOOGLE_API_KEY,
+        self.llm = AzureChatOpenAI(
+            azure_deployment=settings.AZURE_OPENAI_CHAT_DEPLOYMENT,
+            azure_endpoint=settings.AZURE_OPENAI_ENDPOINT,
+            api_key=settings.AZURE_OPENAI_API_KEY,
+            api_version=settings.AZURE_OPENAI_API_VERSION,
         )
 
     async def extract_topics(

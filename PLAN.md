@@ -1,8 +1,8 @@
-# Kagaz — Final Architecture & Implementation Plan
+# DocWise — Final Architecture & Implementation Plan
 
 ## Overview
 
-Kagaz is an AI-powered document Q&A application. Users upload PDFs, audio, or video files and interact with them via a rich-text editor with AI-powered RAG (Retrieval-Augmented Generation). The backend has been migrated from Convex (TypeScript BaaS) to a Python FastAPI server to meet SDE-1 assignment requirements.
+DocWise is an AI-powered document Q&A application. Users upload PDFs, audio, or video files and interact with them via a rich-text editor with AI-powered RAG (Retrieval-Augmented Generation). The backend has been migrated from Convex (TypeScript BaaS) to a Python FastAPI server to meet SDE-1 assignment requirements.
 
 ---
 

@@ -63,7 +63,7 @@ export default function Home() {
             onClick={() => router.push("/")}
             className="text-xl sm:text-2xl font-semibold text-slate-900 cursor-pointer"
           >
-            कागज़
+            DocWise
           </div>
           <div className="flex gap-2 sm:gap-4 items-center">
             <button
@@ -111,7 +111,7 @@ export default function Home() {
       {/* Hero Section */}
       <section className="container mx-auto px-4 sm:px-6 py-12 sm:py-20 text-center max-w-4xl">
         <Link
-          href="https://github.com/Angshuman09/axis"
+          href="https://github.com/dheeraj3587/rag-document-chat"
           target="_blank"
           rel="noopener noreferrer"
           className="group inline-flex items-center gap-2 px-3 py-1.5 mb-6 sm:mb-8 bg-white border border-slate-200 rounded-full text-xs font-medium text-slate-700 hover:bg-slate-50 hover:border-slate-300 transition-all"
@@ -138,7 +138,7 @@ export default function Home() {
           <span className="hidden sm:inline">for any </span>document.
         </h1>
         <p className="text-base sm:text-lg text-slate-600 mb-8 sm:mb-10 max-w-2xl mx-auto leading-relaxed px-4">
-          Write, organize, and ask questions. Kagaz turns your notes into
+          Write, organize, and ask questions. DocWise turns your notes into
           answers.
         </p>
         <div className="flex flex-col sm:flex-row gap-3 justify-center px-4">

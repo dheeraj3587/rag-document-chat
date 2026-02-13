@@ -14,6 +14,7 @@ import {
   Heading3,
   Highlighter,
   Sparkle,
+  Brain,
 } from "lucide-react";
 
 import "@tiptap/extension-highlight";
@@ -33,6 +34,7 @@ export const EditorExtension = ({ editor }: EditorExtensionProps) => {
   const { user } = useUser();
   const { getToken } = useAuth();
   const [loading, setLoading] = useState(false);
+  const [deepMode, setDeepMode] = useState(false);
 
   const { fileId } = useParams();
   const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
@@ -93,7 +95,7 @@ export const EditorExtension = ({ editor }: EditorExtensionProps) => {
           "Content-Type": "application/json",
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
-        body: JSON.stringify({ question: selectedText, file_id: fileId }),
+        body: JSON.stringify({ question: selectedText, file_id: fileId, deep_mode: deepMode }),
       });
 
       if (!response.ok) {
@@ -337,15 +339,29 @@ export const EditorExtension = ({ editor }: EditorExtensionProps) => {
         </div>
 
         {/* AI Button - Separate but cohesive */}
-        <button
-          onClick={() => onAiClick()}
-          disabled={loading}
-          className="flex items-center gap-2 px-3 py-1.5 bg-[#d8b131] hover:bg-[#D4AF37] text-white rounded-lg shadow-sm hover:shadow-md transition-all duration-150 font-medium text-sm disabled:opacity-50 disabled:cursor-not-allowed"
-          title="AI Assistant"
-        >
-          <Sparkle className="w-4 h-4" />
-          <span>{loading ? "Thinking..." : "AI"}</span>
-        </button>
+        <div className="flex items-center gap-1">
+          <button
+            onClick={() => onAiClick()}
+            disabled={loading}
+            className="flex items-center gap-2 px-3 py-1.5 bg-[#d8b131] hover:bg-[#D4AF37] text-white rounded-l-lg shadow-sm hover:shadow-md transition-all duration-150 font-medium text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+            title="AI Assistant"
+          >
+            <Sparkle className="w-4 h-4" />
+            <span>{loading ? "Thinking..." : "AI"}</span>
+          </button>
+          <button
+            onClick={() => setDeepMode(!deepMode)}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-r-lg shadow-sm transition-all duration-150 font-medium text-sm border-l border-white/20 ${
+              deepMode
+                ? "bg-purple-600 hover:bg-purple-700 text-white"
+                : "bg-gray-200 hover:bg-gray-300 text-gray-600"
+            }`}
+            title={deepMode ? "Deep Mode ON (GPT-5.2)" : "Deep Mode OFF (GPT-5-mini)"}
+          >
+            <Brain className="w-4 h-4" />
+            <span className="text-xs">{deepMode ? "Deep" : "Fast"}</span>
+          </button>
+        </div>
       </div>
     </div>
   );

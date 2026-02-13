@@ -13,13 +13,26 @@ class Settings(BaseSettings):
 
     # MinIO / S3
     MINIO_ENDPOINT: str = "minio:9000"
+    MINIO_PUBLIC_ENDPOINT: str = "localhost:9000"
     MINIO_ACCESS_KEY: str = "minioadmin"
     MINIO_SECRET_KEY: str = "minioadmin"
     MINIO_BUCKET: str = "kagaz-files"
     MINIO_USE_SSL: bool = False
 
-    # AI
-    GOOGLE_API_KEY: str = ""
+    # Azure OpenAI - Chat
+    AZURE_OPENAI_API_KEY: str = ""
+    AZURE_OPENAI_ENDPOINT: str = ""
+    AZURE_OPENAI_CHAT_DEPLOYMENT: str = "gpt-5-mini"
+    AZURE_OPENAI_DEEP_DEPLOYMENT: str = "gpt-5.2-chat"
+    AZURE_OPENAI_API_VERSION: str = "2024-12-01-preview"
+
+    # Azure OpenAI - Embeddings (can be on a different resource)
+    AZURE_OPENAI_EMBEDDING_API_KEY: str = ""
+    AZURE_OPENAI_EMBEDDING_ENDPOINT: str = ""
+    AZURE_OPENAI_EMBEDDING_DEPLOYMENT: str = "text-embedding-3-large"
+    AZURE_OPENAI_EMBEDDING_API_VERSION: str = "2024-12-01-preview"
+
+    # Legacy (kept for transcription service)
     OPENAI_API_KEY: str = ""
 
     # Redis

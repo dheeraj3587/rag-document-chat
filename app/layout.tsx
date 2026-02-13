@@ -17,14 +17,14 @@ const outfit = Outfit({
 });
 
 export const metadata: Metadata = {
-  title: "Kagaz",
+  title: "DocWise",
   description: "Smart note-taking editor",
 
   openGraph: {
-    title: "Kagaz",
+    title: "DocWise",
     description: "Smart note-taking editor",
-    url: "https://kagaz-notes.vercel.app",
-    siteName: "Kagaz",
+    url: "https://docwise.vercel.app",
+    siteName: "DocWise",
     images: [
       {
         url: "/home-page.png",
@@ -37,7 +37,7 @@ export const metadata: Metadata = {
 
   twitter: {
     card: "summary_large_image",
-    title: "Kagaz",
+    title: "DocWise",
     description: "Smart note-taking editor",
     images: ["/home-page.png"],
   },

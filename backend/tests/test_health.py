@@ -13,7 +13,7 @@ class TestHealth:
         assert response.status_code == 200
         data = response.json()
         assert data["status"] == "ok"
-        assert data["service"] == "kagaz-api"
+        assert data["service"] == "docwise-api"
 
 
 @pytest.mark.asyncio

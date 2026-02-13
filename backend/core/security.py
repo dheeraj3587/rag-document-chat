@@ -50,7 +50,13 @@ async def _get_jwks() -> dict:
     if _jwks_cache is not None:
         return _jwks_cache
 
-    async with httpx.AsyncClient() as client:
+    if not settings.CLERK_JWKS_URL:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Authentication service not configured (CLERK_JWKS_URL missing)",
+        )
+
+    async with httpx.AsyncClient(timeout=10.0) as client:
         resp = await client.get(settings.CLERK_JWKS_URL)
         resp.raise_for_status()
         _jwks_cache = resp.json()

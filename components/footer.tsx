@@ -7,32 +7,16 @@ const Footer = () => {
         <p className="text-xs sm:text-sm flex justify-center items-center gap-2">
           Made with
           <Heart className="w-4 h-4 sm:w-5 sm:h-5 text-red-400 fill-red-400" />
-          by Angshu
+          by Dheeraj Joshi
         </p>
         <p className="text-xs sm:text-sm flex justify-center items-center gap-2">
           <a
-            href="https://github.com/Angshuman09"
+            href="https://github.com/dheeraj3587"
             target="_blank"
             rel="noopener noreferrer"
             className="hover:text-slate-900 transition-colors"
           >
             GitHub
-          </a>
-          <a
-            href="https://x.com/AngshumanSpace"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="hover:text-slate-900 transition-colors"
-          >
-            Twitter
-          </a>
-          <a
-            href="https://discord.com/users/1085467785389420615"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="hover:text-slate-900 transition-colors"
-          >
-            Discord
           </a>
         </p>
       </div>

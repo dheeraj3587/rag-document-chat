@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import { useParams } from 'next/navigation'
 import { useApiQuery } from '@/lib/hooks'
 import { FileRecord } from '@/lib/api-client'
@@ -15,6 +16,7 @@ import { WorkspaceHeader } from '../../components/workspace-header'
 import { PdfViewer } from '../../components/PdfViewer'
 import { MediaPlayer } from '../../components/MediaPlayer'
 import { TextEditor } from '../../components/textEditor'
+import { ChatPanel } from '../../components/ChatPanel'
 import { WorkspaceSkeleton } from '@/app/skeleton/workspace-skeleton'
 
 import {
@@ -23,8 +25,11 @@ import {
   Separator as PanelResizeHandle
 } from 'react-resizable-panels'
 
+export type RightPanelView = 'document' | 'chat'
+
 const Workspace = () => {
   const { fileId } = useParams()
+  const [rightPanel, setRightPanel] = useState<RightPanelView>('document')
 
   const { data: fileData, isLoading } = useApiQuery<FileRecord>(
     fileId ? `/api/files/${fileId}` : null,
@@ -75,7 +80,12 @@ const Workspace = () => {
 
   return (
     <div className="flex flex-col h-screen">
-      <WorkspaceHeader editor={editor} fileName={fileData.fileName} />
+      <WorkspaceHeader
+        editor={editor}
+        fileName={fileData.fileName}
+        rightPanel={rightPanel}
+        onRightPanelChange={setRightPanel}
+      />
 
       <div className="flex-1 overflow-hidden p-4">
         <PanelGroup orientation="horizontal" className="h-full">
@@ -86,7 +96,9 @@ const Workspace = () => {
           <PanelResizeHandle className="w-2 cursor-col-resize" />
 
           <Panel defaultSize={50} minSize={20} className="h-full">
-            {isMedia ? (
+            {rightPanel === 'chat' ? (
+              <ChatPanel embedded />
+            ) : isMedia ? (
               <MediaPlayer
                 fileUrl={fileData.fileUrl}
                 fileType={fileData.fileType as 'audio' | 'video'}

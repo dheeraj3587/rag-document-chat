@@ -41,6 +41,7 @@ def _classify_file(content_type: str) -> str:
 async def upload_file(
     file: UploadFile = File(...),
     file_name: str = Form(None),
+    user_email: str = Form(None),
     _: None = Depends(rate_limit("upload")),
     user: dict = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
@@ -60,13 +61,16 @@ async def upload_file(
     # Upload to MinIO
     storage_service.upload_file(file_bytes, storage_key, content_type)
 
+    # Use user_email from form if JWT email is empty (fallback)
+    created_by_email = user.get("email") or user_email or ""
+
     # Create database record with status='processing'
     file_record = FileModel(
         file_id=uuid.UUID(file_id),
         file_name=original_name,
         file_type=file_type,
         storage_key=storage_key,
-        created_by=user["email"],
+        created_by=created_by_email,
         status="processing",
     )
     db.add(file_record)

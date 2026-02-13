@@ -1,8 +1,8 @@
-"""Embedding service — generates embeddings using Google Generative AI."""
+"""Embedding service — generates embeddings using Azure OpenAI."""
 
 from typing import List
 
-from langchain_google_genai import GoogleGenerativeAIEmbeddings
+from langchain_openai import AzureOpenAIEmbeddings
 
 from core.config import settings
 from vector_store.faiss_index import faiss_index
@@ -12,9 +12,11 @@ class EmbeddingService:
     """Generates embeddings and stores them in FAISS."""
 
     def __init__(self):
-        self.embeddings_model = GoogleGenerativeAIEmbeddings(
-            model="models/embedding-001",
-            google_api_key=settings.GOOGLE_API_KEY,
+        self.embeddings_model = AzureOpenAIEmbeddings(
+            azure_deployment=settings.AZURE_OPENAI_EMBEDDING_DEPLOYMENT,
+            azure_endpoint=settings.AZURE_OPENAI_EMBEDDING_ENDPOINT,
+            api_key=settings.AZURE_OPENAI_EMBEDDING_API_KEY,
+            api_version=settings.AZURE_OPENAI_EMBEDDING_API_VERSION,
         )
 
     def embed_texts(self, texts: List[str]) -> List[List[float]]:

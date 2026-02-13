@@ -26,10 +26,12 @@ router = APIRouter()
 class ChatRequest(BaseModel):
     question: str
     file_id: str
+    deep_mode: bool = False
 
 
 class SummarizeRequest(BaseModel):
     file_id: str
+    deep_mode: bool = False
 
 
 @router.post("/ask")
@@ -72,6 +74,7 @@ async def chat_ask(
             async for text_chunk in ai_service.chat_stream(
                 question=body.question,
                 context_chunks=context_chunks,
+                deep_mode=body.deep_mode,
             ):
                 response_parts.append(text_chunk)
                 data = json.dumps({"text": text_chunk})
@@ -162,7 +165,7 @@ async def summarize_file(
     async def event_generator():
         summary_parts = []
         try:
-            async for chunk in ai_service.summarize_stream(text):
+            async for chunk in ai_service.summarize_stream(text, deep_mode=body.deep_mode):
                 summary_parts.append(chunk)
                 data = json.dumps({"text": chunk})
                 yield f"data: {data}\n\n"

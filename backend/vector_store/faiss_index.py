@@ -16,7 +16,7 @@ class FAISSIndex:
     Each file gets its own index stored on disk.
     """
 
-    def __init__(self, index_dir: str = None, dimension: int = 768):
+    def __init__(self, index_dir: str = None, dimension: int = 3072):
         self.index_dir = index_dir or settings.FAISS_INDEX_PATH
         self.dimension = dimension
         os.makedirs(self.index_dir, exist_ok=True)

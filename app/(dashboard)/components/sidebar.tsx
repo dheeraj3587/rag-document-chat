@@ -2,14 +2,11 @@
 import {
   Upload,
   FileText,
-  Crown,
   User,
   Menu,
   X,
   LayoutDashboard,
   Sparkles,
-  Gem,
-  CrownIcon,
 } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { useState } from "react";
@@ -21,7 +18,6 @@ import { useApiQuery } from "@/lib/hooks";
 import { FileRecord } from "@/lib/api-client";
 
 interface UserData {
-  upgrade: boolean;
   email: string;
   name: string;
 }
@@ -36,11 +32,6 @@ export const Sidebar = () => {
 
   const { data: getAllFiles } = useApiQuery<FileRecord[]>(
     email ? `/api/files?user_email=${encodeURIComponent(email)}` : null,
-    [email],
-  );
-
-  const { data: currentUser } = useApiQuery<UserData>(
-    email ? `/api/users/me?email=${encodeURIComponent(email)}` : null,
     [email],
   );
 
@@ -77,7 +68,7 @@ export const Sidebar = () => {
           className="h-16 flex items-center px-6 border-b border-slate-200 cursor-pointer"
         >
           <div className="flex items-center gap-2">
-            <span className="text-xl font-semibold text-slate-900">कागज़</span>
+            <span className="text-xl font-semibold text-slate-900">DocWise</span>
           </div>
         </div>
 
@@ -97,62 +88,28 @@ export const Sidebar = () => {
 
           <FileUpload>
             <Button
-              disabled={
-                getAllFiles?.length === 5 && currentUser?.upgrade === false
-              }
               className="flex items-center gap-3 px-3 py-2.5 rounded-lg w-full bg-slate-900 text-white hover:bg-slate-800 transition-colors cursor-pointer font-medium text-sm"
             >
               <Upload size={18} />
               <span>Upload File</span>
             </Button>
           </FileUpload>
-
-          <button
-            onClick={() => router.push("/dashboard/upgrade")}
-            className={
-              path === "/dashboard/upgrade"
-                ? "flex items-center gap-3 px-3 py-2.5 rounded-lg bg-slate-100 text-slate-900 w-full hover:bg-slate-200 transition-colors font-medium text-sm"
-                : "flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 w-full hover:bg-slate-100 transition-colors font-medium text-sm group border-b border-t border-slate-200"
-            }
-          >
-            <Crown size={18} className="text-amber-500" />
-            <span>Upgrade</span>
-            <span className="ml-auto text-xs bg-amber-50 text-amber-600 px-2 py-0.5 rounded font-semibold">
-              PRO
-            </span>
-          </button>
         </nav>
 
-        {/* Progress Section */}
-
-        {currentUser?.upgrade === false && (
-          <div className="p-6 border-t border-slate-200 space-y-4">
-            <div className="p-4 rounded-lg bg-slate-50 border border-slate-200">
-              <div className="flex items-center justify-between mb-3">
-                <span className="text-sm font-medium text-slate-700">
-                  Storage
-                </span>
-                <span className="text-sm font-semibold text-slate-900">
-                  {getAllFiles?.length}/5 PDFs
-                </span>
-              </div>
-              <Progress value={progressValue} className="h-2" />
-              <p className="text-xs text-slate-500 mt-3">
-                {5 - (getAllFiles?.length || 0)} upload
-                {5 - (getAllFiles?.length || 0) !== 1 ? "s" : ""} remaining on
-                free plan
-              </p>
+        {/* Storage Info */}
+        <div className="p-6 border-t border-slate-200 space-y-4">
+          <div className="p-4 rounded-lg bg-slate-50 border border-slate-200">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-sm font-medium text-slate-700">
+                Storage
+              </span>
+              <span className="text-sm font-semibold text-slate-900">
+                {getAllFiles?.length || 0} documents
+              </span>
             </div>
-
-            <button
-              onClick={() => router.push("/dashboard/upgrade")}
-              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-slate-900 text-white hover:bg-slate-800 transition-colors text-sm font-medium"
-            >
-              <CrownIcon size={16} />
-              Upgrade Plan
-            </button>
+            <Progress value={progressValue} className="h-2" />
           </div>
-        )}
+        </div>
       </aside>
     </>
   );

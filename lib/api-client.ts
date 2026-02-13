@@ -189,29 +189,3 @@ export async function searchDocuments(
   }
   return "";
 }
-
-// ─── Upgrade / Payment APIs ─────────────────────────────────────────────────
-
-export async function createPaymentCheckout(
-  token?: string | null,
-): Promise<{ url: string }> {
-  const res = await fetch(`${API_BASE}/api/users/checkout`, {
-    method: "POST",
-    headers: buildHeaders(token),
-  });
-  if (!res.ok) {
-    throw new Error("Failed to create checkout session");
-  }
-  return res.json();
-}
-
-export async function upgradeUser(
-  email: string,
-  token?: string | null,
-): Promise<void> {
-  await fetch(`${API_BASE}/api/users/${encodeURIComponent(email)}`, {
-    method: "PATCH",
-    headers: buildHeaders(token),
-    body: JSON.stringify({ upgrade: true }),
-  });
-}

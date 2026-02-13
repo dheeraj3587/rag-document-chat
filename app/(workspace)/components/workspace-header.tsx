@@ -6,15 +6,20 @@ import { saveNote } from "@/lib/api-client";
 import { useUser } from "@clerk/nextjs";
 import { useState } from "react";
 import { Editor } from "@tiptap/react";
-import { Undo, Undo2 } from "lucide-react";
+import { Undo2, FileText, MessageCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
+import type { RightPanelView } from "../workspace/[fileId]/page";
 
 export const WorkspaceHeader = ({
   fileName,
   editor,
+  rightPanel,
+  onRightPanelChange,
 }: {
   fileName: string;
   editor: Editor | null;
+  rightPanel: RightPanelView;
+  onRightPanelChange: (view: RightPanelView) => void;
 }) => {
   const router = useRouter();
   const { fileId } = useParams();
@@ -105,6 +110,31 @@ export const WorkspaceHeader = ({
             className="bg-slate-200 w-10 h-10 p-2 rounded-full cursor-pointer"
           />
           <h1 className="text-lg font-semibold text-slate-900">Workspace</h1>
+        </div>
+        {/* Document / Chat toggle */}
+        <div className="flex items-center bg-slate-100 rounded-lg p-0.5 gap-0.5">
+          <button
+            onClick={() => onRightPanelChange("document")}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-all ${
+              rightPanel === "document"
+                ? "bg-white text-slate-900 shadow-sm"
+                : "text-slate-500 hover:text-slate-700"
+            }`}
+          >
+            <FileText className="w-4 h-4" />
+            <span className="hidden sm:inline">Document</span>
+          </button>
+          <button
+            onClick={() => onRightPanelChange("chat")}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-all ${
+              rightPanel === "chat"
+                ? "bg-white text-slate-900 shadow-sm"
+                : "text-slate-500 hover:text-slate-700"
+            }`}
+          >
+            <MessageCircle className="w-4 h-4" />
+            <span className="hidden sm:inline">Chat</span>
+          </button>
         </div>
         <div className="lg:hidden flex flex-col justify-center items-center">
           <h1 className="text-lg font-semibold text-slate-900">Workspace</h1>

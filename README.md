@@ -80,7 +80,7 @@
 ## Project Structure
 
 ```
-kagaz/
+rag-document-chat/
 ├── app/                    # Next.js app directory
 │   ├── (routes)/          # Application routes
 │   ├── layout.tsx         # Root layout
@@ -145,7 +145,7 @@ kagaz/
 
 ## Authentication
 
-Kagaz supports two authentication methods:
+DocWise supports two authentication methods:
 
 ### Clerk JWT (default)
 

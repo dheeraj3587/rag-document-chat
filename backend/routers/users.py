@@ -38,7 +38,6 @@ async def create_user(
         email=body.email,
         name=body.name,
         image_url=body.image_url,
-        upgrade=False,
     )
     db.add(new_user)
 
@@ -57,13 +56,12 @@ async def get_me(
     db_user = result.scalar_one_or_none()
 
     if not db_user:
-        return {"email": user["email"], "name": user.get("name", ""), "upgrade": False}
+        return {"email": user["email"], "name": user.get("name", "")}
 
     return {
         "email": db_user.email,
         "name": db_user.name,
         "imageUrl": db_user.image_url,
-        "upgrade": db_user.upgrade,
     }
 
 
@@ -75,7 +73,7 @@ async def update_user(
     user: dict = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    """Update user fields (upgrade status, etc.)."""
+    """Update user fields (name, image, etc.)."""
     stmt = select(User).where(User.email == email)
     result = await db.execute(stmt)
     db_user = result.scalar_one_or_none()
@@ -83,8 +81,6 @@ async def update_user(
     if not db_user:
         raise HTTPException(status_code=404, detail="User not found")
 
-    if "upgrade" in body:
-        db_user.upgrade = body["upgrade"]
     if "name" in body:
         db_user.name = body["name"]
     if "image_url" in body:
