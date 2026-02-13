@@ -1,8 +1,8 @@
 'use client'
 
 import { useParams } from 'next/navigation'
-import { useQuery } from 'convex/react'
-import { api } from '@/convex/_generated/api'
+import { useApiQuery } from '@/lib/hooks'
+import { FileRecord } from '@/lib/api-client'
 import StarterKit from '@tiptap/starter-kit'
 import Placeholder from '@tiptap/extension-placeholder'
 import TextAlign from '@tiptap/extension-text-align'
@@ -13,6 +13,7 @@ import Highlight from '@tiptap/extension-highlight'
 import { useEditor } from '@tiptap/react'
 import { WorkspaceHeader } from '../../components/workspace-header'
 import { PdfViewer } from '../../components/PdfViewer'
+import { MediaPlayer } from '../../components/MediaPlayer'
 import { TextEditor } from '../../components/textEditor'
 import { WorkspaceSkeleton } from '@/app/skeleton/workspace-skeleton'
 
@@ -25,9 +26,9 @@ import {
 const Workspace = () => {
   const { fileId } = useParams()
 
-  const getFileRecord = useQuery(
-    api.fileStorage.getFileData,
-    fileId ? { fileId: fileId as string } : "skip"
+  const { data: fileData, isLoading } = useApiQuery<FileRecord>(
+    fileId ? `/api/files/${fileId}` : null,
+    [fileId],
   )
 
   const editor = useEditor({
@@ -59,22 +60,22 @@ const Workspace = () => {
     })
 
   if (!fileId) {
-    return <div>file not fount</div>
+    return <div>file not found</div>
   }
 
-  if (getFileRecord === undefined) {
+  if (isLoading) {
     return <WorkspaceSkeleton />
   }
 
-  if (getFileRecord.length === 0) {
+  if (!fileData) {
     return <div>File not found</div>
   }
 
-  const file = getFileRecord[0]
+  const isMedia = fileData.fileType === 'audio' || fileData.fileType === 'video'
 
   return (
     <div className="flex flex-col h-screen">
-      <WorkspaceHeader editor={editor} fileName={file.fileName} />
+      <WorkspaceHeader editor={editor} fileName={fileData.fileName} />
 
       <div className="flex-1 overflow-hidden p-4">
         <PanelGroup orientation="horizontal" className="h-full">
@@ -85,7 +86,15 @@ const Workspace = () => {
           <PanelResizeHandle className="w-2 cursor-col-resize" />
 
           <Panel defaultSize={50} minSize={20} className="h-full">
-            <PdfViewer fileUrl={file.fileUrl} />
+            {isMedia ? (
+              <MediaPlayer
+                fileUrl={fileData.fileUrl}
+                fileType={fileData.fileType as 'audio' | 'video'}
+                timestamps={fileData.timestamps || []}
+              />
+            ) : (
+              <PdfViewer fileUrl={fileData.fileUrl} />
+            )}
           </Panel>
         </PanelGroup>
       </div>

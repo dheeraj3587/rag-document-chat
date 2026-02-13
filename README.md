@@ -154,6 +154,131 @@ kagaz/
 
 ---
 
+## Authentication
+
+Kagaz supports two authentication methods:
+
+### Clerk JWT (default)
+
+All API requests from the frontend include a Clerk-issued JWT in the `Authorization` header:
+
+```
+Authorization: Bearer <clerk-jwt-token>
+```
+
+### API Key (machine-to-machine)
+
+For programmatic access, supply an API key via the `X-API-Key` header:
+
+```
+X-API-Key: your-api-key
+```
+
+Configure allowed keys in `backend/.env`:
+
+```env
+# Comma-separated or JSON array
+API_KEYS=key1,key2
+# or
+API_KEYS=["key1","key2"]
+```
+
+Invalid or missing credentials return **401 Unauthorized**.
+
+---
+
+## Rate Limiting
+
+Every endpoint is rate-limited per authenticated identity (email or API key fingerprint) using a fixed-window algorithm backed by Redis (with in-memory fallback).
+
+Default limits (requests per minute):
+
+| Endpoint group | Env var | Default |
+|---|---|---|
+| General | `RATE_LIMIT_DEFAULT_PER_MINUTE` | 120 |
+| File upload | `RATE_LIMIT_UPLOAD_PER_MINUTE` | 20 |
+| Chat (ask) | `RATE_LIMIT_CHAT_PER_MINUTE` | 30 |
+| Summarize | `RATE_LIMIT_SUMMARIZE_PER_MINUTE` | 10 |
+| Search | `RATE_LIMIT_SEARCH_PER_MINUTE` | 60 |
+| Users | `RATE_LIMIT_USERS_PER_MINUTE` | 60 |
+| Notes | `RATE_LIMIT_NOTES_PER_MINUTE` | 120 |
+
+When the limit is exceeded the API returns **429 Too Many Requests** with `Retry-After`, `X-RateLimit-Limit`, and `X-RateLimit-Remaining` headers.
+
+---
+
+## Response Caching
+
+AI-generated responses are cached in Redis to reduce latency and API costs.
+
+| Setting | Default | Description |
+|---|---|---|
+| `CACHE_ENABLED` | `true` | Toggle caching on/off |
+| `CACHE_TTL_CHAT_SECONDS` | `1800` | TTL for chat answers (30 min) |
+| `CACHE_TTL_SUMMARY_SECONDS` | `1800` | TTL for summaries (30 min) |
+| `CACHE_TTL_SEARCH_SECONDS` | `600` | TTL for search results (10 min) |
+
+Identical requests within the TTL window are served from cache. If Redis is unavailable, an in-memory fallback is used automatically.
+
+---
+
+## Environment Variables
+
+### Backend (`backend/.env`)
+
+```env
+# Database
+DATABASE_URL=postgresql+asyncpg://kagaz:kagaz@db:5432/kagaz
+
+# MinIO / S3
+MINIO_ENDPOINT=minio:9000
+MINIO_ACCESS_KEY=minioadmin
+MINIO_SECRET_KEY=minioadmin
+MINIO_BUCKET=kagaz-files
+MINIO_USE_SSL=false
+
+# AI
+GOOGLE_API_KEY=your-google-api-key
+OPENAI_API_KEY=your-openai-api-key
+
+# Redis
+REDIS_URL=redis://redis:6379/0
+
+# Clerk Auth
+CLERK_JWKS_URL=https://your-clerk-domain.clerk.accounts.dev/.well-known/jwks.json
+CLERK_ISSUER=https://your-clerk-domain.clerk.accounts.dev
+
+# API key auth (optional)
+API_KEYS=
+
+# Caching
+CACHE_ENABLED=true
+CACHE_TTL_CHAT_SECONDS=1800
+CACHE_TTL_SUMMARY_SECONDS=1800
+CACHE_TTL_SEARCH_SECONDS=600
+
+# Rate limiting (per minute)
+RATE_LIMIT_DEFAULT_PER_MINUTE=120
+RATE_LIMIT_UPLOAD_PER_MINUTE=20
+RATE_LIMIT_CHAT_PER_MINUTE=30
+RATE_LIMIT_SUMMARIZE_PER_MINUTE=10
+RATE_LIMIT_SEARCH_PER_MINUTE=60
+RATE_LIMIT_USERS_PER_MINUTE=60
+RATE_LIMIT_NOTES_PER_MINUTE=120
+
+# CORS
+CORS_ORIGINS=["http://localhost:3000"]
+
+# FAISS
+FAISS_INDEX_PATH=./faiss_indices
+```
+
+### Docker Compose
+
+All backend env vars listed above can also be set in the `environment` block of the `backend` and `worker` services in `docker-compose.yml`.
+
+---
+
 ## Author
 
 **Angshuman**

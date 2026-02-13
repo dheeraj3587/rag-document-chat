@@ -7,9 +7,9 @@ import { UserButton, useUser } from "@clerk/clerk-react";
 import { useRouter } from "next/navigation";
 import Dashboard from "./(dashboard)/dashboard/page";
 import Pricing from "./pricing";
-import { useMutation } from "convex/react";
-import { api } from "@/convex/_generated/api";
-import { useEffect } from "react";
+import { createUser } from "@/lib/api-client";
+import { useAuth } from "@clerk/nextjs";
+import { useCallback, useEffect } from "react";
 import { Playfair_Display } from "next/font/google";
 import Footer from "@/components/footer";
 
@@ -23,22 +23,29 @@ const elegantFont = Playfair_Display({
 export default function Home() {
   const { user } = useUser();
   const router = useRouter();
+  const { getToken } = useAuth();
 
-  const createUser = useMutation(api.user.createUser);
-  // console.log(user)
+  const checkUser = useCallback(async () => {
+    try {
+      const token = await getToken();
+      await createUser(
+        {
+          email: user?.primaryEmailAddress?.emailAddress as string,
+          name: user?.firstName as string,
+          image_url: user?.imageUrl as string,
+        },
+        token,
+      );
+    } catch (error) {
+      console.error("Error creating user:", error);
+    }
+  }, [getToken, user]);
+
   useEffect(() => {
-    user && checkUser();
-  }, [user]);
-
-  const checkUser = async () => {
-    const result = await createUser({
-      email: user?.primaryEmailAddress?.emailAddress as string,
-      userName: user?.firstName as string,
-      imageUrl: user?.imageUrl as string,
-    });
-
-    console.log(result);
-  };
+    if (user) {
+      checkUser();
+    }
+  }, [user, checkUser]);
 
   const handleGetStarted = async () => {
     if (user) {

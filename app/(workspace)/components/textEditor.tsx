@@ -1,11 +1,18 @@
 'use client'
 import { EditorExtension } from './Editor-extension'
 import { useEditor, EditorContent } from '@tiptap/react'
-import { useQuery } from 'convex/react'
-import { api } from '@/convex/_generated/api'
+import { useApiQuery } from '@/lib/hooks'
 import { useParams } from 'next/navigation'
 import { useEffect } from 'react'
 import { Editor } from '@tiptap/react'
+
+interface NoteData {
+    id: number
+    fileId: string
+    note: string
+    createdBy?: string
+    updatedAt?: string
+}
 
 interface EditorExtensionProps {
     editor: Editor | null
@@ -14,15 +21,16 @@ interface EditorExtensionProps {
 export const TextEditor = ({editor}: EditorExtensionProps) => {
 
     const { fileId } = useParams();
-    const getNotes = useQuery(api.notes.getNotes, fileId ? { fileId: fileId as string } : "skip");
-
-    
+    const { data: noteData } = useApiQuery<NoteData[]>(
+        fileId ? `/api/notes/${fileId}` : null,
+        [fileId],
+    );
 
     useEffect(() => {
-        if (getNotes) {
-            editor && editor.commands.setContent(getNotes[0]?.note);
+        if (Array.isArray(noteData) && noteData.length > 0 && noteData[0].note) {
+            editor && editor.commands.setContent(noteData[0].note);
         }
-    }, [getNotes && editor])
+    }, [noteData, editor])
 
     if (!editor) {
         return null

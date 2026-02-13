@@ -19,8 +19,8 @@ import {
 import "@tiptap/extension-highlight";
 import "@tiptap/extension-underline";
 import "@tiptap/extension-text-align";
-import { useAction, useMutation } from "convex/react";
-import { api } from "@/convex/_generated/api.js";
+import { saveNote } from "@/lib/api-client";
+import { useAuth } from "@clerk/nextjs";
 import { useParams } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
 
@@ -31,11 +31,11 @@ interface EditorExtensionProps {
 export const EditorExtension = ({ editor }: EditorExtensionProps) => {
   const [isActive, setIsActive] = useState(false);
   const { user } = useUser();
+  const { getToken } = useAuth();
   const [loading, setLoading] = useState(false);
 
-  const SearchAI = useAction(api.myAction.search);
-  const addNotes = useMutation(api.notes.saveNote);
   const { fileId } = useParams();
+  const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
   useEffect(() => {
     if (!editor) return;
@@ -70,47 +70,9 @@ export const EditorExtension = ({ editor }: EditorExtensionProps) => {
       return;
     }
 
-    console.log("Selected text:", selectedText);
-    console.log("File ID:", fileId);
-
     try {
-      // Get context from your vector search
-      const result = await SearchAI({
-        query: selectedText,
-        fileId: fileId as string,
-      });
-
-      console.log("Search result:", result);
-
-      const PROMPT = `
-You are a helpful AI assistant.
-
-USER QUESTION:
-${selectedText}
-
-RETRIEVED CONTEXT (may be incomplete):
-${result}
-
-TASK:
-Use the retrieved context as the primary source to answer the question.  
-If the context is unclear, incomplete, or empty, use your general knowledge to provide a helpful and reasonable explanation.
-
-STYLE GUIDELINES:
-- Explain in simple, short and easy-to-understand language.
-- Be clear, structured, and beginner-friendly.
-- Do not mention "context" or "retrieved data" in the answer.
-- Do not leave large space between the answer and key points.
-- Focus on giving value, not disclaimers.
-
-OUTPUT FORMAT (HTML ONLY):
-<h2>Answer</h2>
-<p>Main explanation here.</p>
-<h3>Key Points</h3>
-<ul>
-  <li>Important point</li>
-  <li>Another helpful point</li>
-</ul>
-`;
+      // Prepare placeholder for streaming answer
+      const token = await getToken();
 
       // Insert initial placeholder at the end of current content
       const currentPos = editor.state.doc.content.size;
@@ -124,22 +86,17 @@ OUTPUT FORMAT (HTML ONLY):
 
       let streamedAnswer = "";
 
-      console.log("Calling streaming API...");
-
-      // Call the streaming API
-      const response = await fetch("/api/ai-stream", {
+      // Stream from backend RAG endpoint
+      const response = await fetch(`${API_BASE}/api/chat/ask`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
-        body: JSON.stringify({ prompt: PROMPT }),
+        body: JSON.stringify({ question: selectedText, file_id: fileId }),
       });
 
-      console.log("Response status:", response.status);
-
       if (!response.ok) {
-        const errorText = await response.text();
-        console.error("API error response:", errorText);
         throw new Error(`API request failed: ${response.status}`);
       }
 
@@ -150,18 +107,14 @@ OUTPUT FORMAT (HTML ONLY):
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
 
-      console.log("Starting to read stream...");
-
       while (true) {
         const { done, value } = await reader.read();
 
         if (done) {
-          console.log("Stream reading done");
           break;
         }
 
         const chunk = decoder.decode(value, { stream: true });
-        console.log("Received chunk:", chunk);
 
         const lines = chunk.split("\n");
 
@@ -172,15 +125,15 @@ OUTPUT FORMAT (HTML ONLY):
             const data = line.slice(6).trim();
 
             if (data === "[DONE]") {
-              console.log("Received DONE signal");
               break;
             }
 
             try {
               const parsed = JSON.parse(data);
-              console.log("Parsed data:", parsed);
 
-              streamedAnswer += parsed.text;
+              if (parsed.text) {
+                streamedAnswer += parsed.text;
+              }
 
               // Clean the answer
               const cleanedAnswer = streamedAnswer
@@ -199,25 +152,23 @@ OUTPUT FORMAT (HTML ONLY):
               // Insert updated content
               editor.commands.insertContentAt(answerStartPos, cleanedAnswer);
             } catch (e) {
-              console.error("Error parsing chunk:", e, "Data:", data);
+              // skip malformed lines
             }
           }
         }
       }
 
-      console.log("Final streamed answer:", streamedAnswer);
-
       // Save to database
       const Allnote = editor.getHTML();
-      await addNotes({
-        fileId: fileId as string,
-        note: Allnote,
-        createBy: user?.primaryEmailAddress?.emailAddress as string,
-      });
+      const saveToken = await getToken();
+      await saveNote(
+        fileId as string,
+        Allnote,
+        user?.primaryEmailAddress?.emailAddress as string,
+        saveToken,
+      );
 
-      console.log("Streaming completed successfully");
     } catch (error) {
-      console.error("Error during AI streaming:", error);
       alert("Error: " + (error as Error).message);
     } finally {
       setLoading(false);

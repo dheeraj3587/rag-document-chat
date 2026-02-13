@@ -1,10 +1,10 @@
 'use client'
-import { FileText, Upload } from 'lucide-react';
+import { FileText, Upload, Music, Video } from 'lucide-react';
 
 import React, { useState } from 'react';
 import { UserButton, useUser } from '@clerk/clerk-react';
-import { useQuery } from 'convex/react';
-import { api } from '@/convex/_generated/api';
+import { useApiQuery } from '@/lib/hooks';
+import { FileRecord } from '@/lib/api-client';
 import { Skeleton } from '@/components/ui/skeleton';
 import Link from 'next/link';
 import Upgrade from './upgrade/page';
@@ -17,11 +17,20 @@ export default function Dashboard() {
   const path = usePathname();
 
   const { user } = useUser();
-  // const [loading, setLoading] = useState(false);
 
-  const getAllFiles = useQuery(api.fileStorage.getUserFiles,{
-    userEmail: user?.primaryEmailAddress?.emailAddress as string
-  })
+  const email = user?.primaryEmailAddress?.emailAddress;
+  const { data: getAllFiles, isLoading } = useApiQuery<FileRecord[]>(
+    email ? `/api/files?user_email=${encodeURIComponent(email)}` : null,
+    [email],
+  );
+
+  const getFileIcon = (fileType?: string) => {
+    switch (fileType) {
+      case 'audio': return <Music size={48} className="text-purple-300" />;
+      case 'video': return <Video size={48} className="text-blue-300" />;
+      default: return <FileText size={48} className="text-slate-300" />;
+    }
+  };
 
   return (
     <>
@@ -35,7 +44,7 @@ export default function Dashboard() {
 
         {/* PDF Grid */}
         <main className="flex-1 overflow-auto p-4 lg:p-8">
-          {getAllFiles === undefined ? (
+          {isLoading ? (
             <div>
                <div className="mb-6">
                 <Skeleton className="h-6 w-48 mb-2" />
@@ -56,7 +65,7 @@ export default function Dashboard() {
                 ))}
             </div>
             </div>
-          ) : getAllFiles.length === 0 ? (
+          ) : !getAllFiles || getAllFiles.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full text-center px-4">
               <div className="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center mb-4">
                 <FileText size={32} className="text-slate-400" />
@@ -78,19 +87,23 @@ export default function Dashboard() {
                     className="bg-white rounded-lg border border-slate-200 hover:border-slate-300 hover:shadow-md transition-all overflow-hidden text-left group"
                   >
                     <Link href={`/workspace/${pdf.fileId}`}>
-                    {/* PDF Preview */}
+                    {/* File Preview */}
                     <div className="h-40 bg-slate-50 flex items-center justify-center border-b border-slate-200 group-hover:bg-slate-100 transition-colors">
-                      <FileText size={48} className="text-slate-300" />
+                      {getFileIcon(pdf.fileType)}
                     </div>
 
-                    {/* PDF Info */}
+                    {/* File Info */}
                     <div className="p-4">
                       <h3 className="font-medium text-slate-900 mb-2 truncate text-sm">
                         {pdf?.fileName}
                       </h3>
                       <div className="flex items-center justify-between text-xs text-slate-500">
-                        {/* <span>{} pages</span> */}
-                        {/* <span>{pdf?._creationTime}</span> */}
+                        <span className="uppercase px-1.5 py-0.5 bg-slate-100 rounded text-[10px] font-medium">
+                          {pdf.fileType}
+                        </span>
+                        {pdf.status === 'processing' && (
+                          <span className="text-amber-600 font-medium">Processing...</span>
+                        )}
                       </div>
                     </div>
                     </Link>

@@ -17,8 +17,14 @@ import { Button } from "@/components/ui/button";
 import { FileUpload } from "./file-upload";
 import { usePathname, useRouter } from "next/navigation";
 import { useUser } from "@clerk/clerk-react";
-import { useQuery } from "convex/react";
-import { api } from "@/convex/_generated/api";
+import { useApiQuery } from "@/lib/hooks";
+import { FileRecord } from "@/lib/api-client";
+
+interface UserData {
+  upgrade: boolean;
+  email: string;
+  name: string;
+}
 
 export const Sidebar = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -26,14 +32,17 @@ export const Sidebar = () => {
   const router = useRouter();
 
   const { user } = useUser();
+  const email = user?.primaryEmailAddress?.emailAddress;
 
-  const getAllFiles = useQuery(api.fileStorage.getUserFiles, {
-    userEmail: user?.primaryEmailAddress?.emailAddress as string,
-  });
+  const { data: getAllFiles } = useApiQuery<FileRecord[]>(
+    email ? `/api/files?user_email=${encodeURIComponent(email)}` : null,
+    [email],
+  );
 
-  const currentUser = useQuery(api.user.getUser, {
-    email: user?.primaryEmailAddress?.emailAddress as string,
-  });
+  const { data: currentUser } = useApiQuery<UserData>(
+    email ? `/api/users/me?email=${encodeURIComponent(email)}` : null,
+    [email],
+  );
 
   const progressValue =
     getAllFiles && getAllFiles.length ? (getAllFiles.length / 5) * 100 : 0;
@@ -94,7 +103,7 @@ export const Sidebar = () => {
               className="flex items-center gap-3 px-3 py-2.5 rounded-lg w-full bg-slate-900 text-white hover:bg-slate-800 transition-colors cursor-pointer font-medium text-sm"
             >
               <Upload size={18} />
-              <span>Upload PDF</span>
+              <span>Upload File</span>
             </Button>
           </FileUpload>
 

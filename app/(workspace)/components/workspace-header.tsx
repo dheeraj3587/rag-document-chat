@@ -1,8 +1,8 @@
 import { Button } from "@/components/ui/button";
 import { UserButton } from "@clerk/nextjs";
 import { useParams } from "next/navigation";
-import { useQuery, useMutation } from "convex/react";
-import { api } from "@/convex/_generated/api";
+import { useAuth } from "@clerk/nextjs";
+import { saveNote } from "@/lib/api-client";
 import { useUser } from "@clerk/nextjs";
 import { useState } from "react";
 import { Editor } from "@tiptap/react";
@@ -19,18 +19,76 @@ export const WorkspaceHeader = ({
   const router = useRouter();
   const { fileId } = useParams();
   const [loading, setLoading] = useState(false);
+  const [summarizing, setSummarizing] = useState(false);
 
   const { user } = useUser();
-  const saveNote = useMutation(api.notes.saveNote);
+  const { getToken } = useAuth();
+  const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
   const HandleSave = async () => {
     setLoading(true);
-    await saveNote({
-      fileId: fileId as string,
-      note: editor?.getHTML() as string,
-      createBy: user?.primaryEmailAddress?.emailAddress as string,
-    });
+    try {
+      const token = await getToken();
+      await saveNote(
+        fileId as string,
+        editor?.getHTML() as string,
+        user?.primaryEmailAddress?.emailAddress as string,
+        token,
+      );
+    } catch (error) {
+      console.error("Error saving note:", error);
+    }
     setLoading(false);
+  };
+
+  const handleSummarize = async () => {
+    if (!editor) return;
+    setSummarizing(true);
+    try {
+      const token = await getToken();
+      const response = await fetch(`${API_BASE}/api/chat/summarize`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({ file_id: fileId }),
+      });
+      if (!response.ok || !response.body) {
+        throw new Error(`Summarize failed: ${response.status}`);
+      }
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      const insertPos = editor.state.doc.content.size;
+      editor.commands.insertContentAt(insertPos, "<h2>Summary</h2><p></p>");
+      let summary = "";
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        const chunk = decoder.decode(value, { stream: true });
+        const lines = chunk.split("\n");
+        for (const line of lines) {
+          if (!line.startsWith("data: ")) continue;
+          const data = line.slice(6).trim();
+          if (data === "[DONE]") break;
+          try {
+            const parsed = JSON.parse(data);
+            if (parsed.text) {
+              summary += parsed.text;
+              const endPos = editor.state.doc.content.size;
+              editor.commands.deleteRange({ from: insertPos + 17, to: endPos });
+              editor.commands.insertContentAt(insertPos + 17, summary);
+            }
+          } catch {
+            // ignore malformed line
+          }
+        }
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setSummarizing(false);
+    }
   };
 
   const handleBack = () => {
@@ -58,6 +116,9 @@ export const WorkspaceHeader = ({
       {/* Profile */}
 
       <div className="flex items-center gap-4">
+        <Button variant="outline" onClick={handleSummarize} disabled={summarizing}>
+          {summarizing ? "Summarizing..." : "Summarize"}
+        </Button>
         <Button onClick={HandleSave} disabled={loading}>
           {loading ? "Saving..." : "Save"}
         </Button>

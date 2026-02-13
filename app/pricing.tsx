@@ -1,8 +1,8 @@
 "use client";
 import ShinyText from "@/components/ShinyText";
 import { useRouter } from "next/navigation";
-import { useAction } from "convex/react";
-import { api } from "@/convex/_generated/api";
+import { createPaymentCheckout } from "@/lib/api-client";
+import { useAuth } from "@clerk/nextjs";
 import { useUser } from "@clerk/clerk-react";
 import { toast } from "sonner";
 import { useState } from "react";
@@ -10,8 +10,8 @@ import { useState } from "react";
 const Pricing = () => {
   const router = useRouter();
   const { user } = useUser();
+  const { getToken } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
-  const createCheckout = useAction(api.stripe.createPaymentCheckout);
 
   const handleUpgrade = async () => {
     if (!user) {
@@ -21,8 +21,8 @@ const Pricing = () => {
 
     try {
       setIsLoading(true);
-
-      const session = await createCheckout({});
+      const token = await getToken();
+      const session = await createPaymentCheckout(token);
 
       if (session.url) {
         window.location.href = session.url;

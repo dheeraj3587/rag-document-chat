@@ -1,30 +1,49 @@
 "use client";
 import { UserButton, useUser } from "@clerk/clerk-react";
-import { useMutation, useQuery } from "convex/react";
-import { api } from "@/convex/_generated/api";
-import { useEffect } from "react";
+import { useAuth } from "@clerk/nextjs";
+import { createUser, getUser as fetchUser } from "@/lib/api-client";
+import { useCallback, useEffect, useState } from "react";
 
-const header = ({ name }: { name: string }) => {
+interface UserData {
+  upgrade: boolean;
+  email: string;
+  name: string;
+}
+
+const Header = ({ name }: { name: string }) => {
   const { user } = useUser();
+  const { getToken } = useAuth();
+  const [userData, setUserData] = useState<UserData | null>(null);
 
-  const createUser = useMutation(api.user.createUser);
+  const checkUser = useCallback(async () => {
+    try {
+      const token = await getToken();
+      await createUser(
+        {
+          email: user?.primaryEmailAddress?.emailAddress as string,
+          name: user?.firstName as string,
+          image_url: user?.imageUrl as string,
+        },
+        token,
+      );
+      const data = await fetchUser(
+        user?.primaryEmailAddress?.emailAddress as string,
+        token,
+      );
+      setUserData(data);
+    } catch (error) {
+      console.error("Error syncing user:", error);
+    }
+  }, [getToken, user]);
+
   useEffect(() => {
-    user && checkUser();
-  }, [user]);
-
-  const checkUser = async () => {
-    const result = await createUser({
-      email: user?.primaryEmailAddress?.emailAddress as string,
-      userName: user?.firstName as string,
-      imageUrl: user?.imageUrl as string,
-    });
-    console.log(result);
-  };
-
-  const getUser = useQuery(api.user.getUser, {
-    email: user?.primaryEmailAddress?.emailAddress as string,
-  });
-  console.log(getUser);
+    if (user) {
+      const timeoutId = setTimeout(() => {
+        void checkUser();
+      }, 0);
+      return () => clearTimeout(timeoutId);
+    }
+  }, [user, checkUser]);
 
   return (
     <header className="h-16 bg-white border-b border-slate-200 px-4 lg:px-8 flex items-center justify-between">
@@ -47,7 +66,7 @@ const header = ({ name }: { name: string }) => {
             {user?.firstName}
           </p>
           <p className="text-xs text-slate-500">
-            {getUser && getUser?.upgrade == true ? "Pro plan" : "Free plan"}
+            {userData && userData?.upgrade == true ? "Pro plan" : "Free plan"}
           </p>
         </div>
         <UserButton
@@ -63,4 +82,4 @@ const header = ({ name }: { name: string }) => {
   );
 };
 
-export default header;
+export default Header;
